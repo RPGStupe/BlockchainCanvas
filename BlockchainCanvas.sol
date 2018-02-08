@@ -76,7 +76,7 @@ contract CanvasModel {
         alpha: _alpha
       });
 
-      currentX++;
+      nextX++;
 
       if (nextX >= MAX_COLUMNS) {
           nextX = 0;
@@ -101,7 +101,7 @@ contract CanvasModel {
         uint8[64] memory _blue;
         uint8[64] memory _alpha;
 
-        uint256 canvasId = _createCanvas(currentX, currentY, _red, _green, _blue, _alpha, msg.sender);
+        uint256 canvasId = _createCanvas(nextX, nextY, _red, _green, _blue, _alpha, msg.sender);
         _approve(msg.sender, canvasId);
     }
 
@@ -115,7 +115,7 @@ contract CanvasModel {
         uint8[64] memory _blue;
         uint8[64] memory _alpha;
 
-        uint256 canvasId = _createCanvas(currentX, currentY, _red, _green, _blue, _alpha, msg.sender);
+        uint256 canvasId = _createCanvas(nextX, nextY, _red, _green, _blue, _alpha, msg.sender);
         _approve(msg.sender, canvasId);
     }
 
@@ -210,4 +210,133 @@ contract CanvasOwnership is ERC721, CanvasModel {
 
         return result;
     }
+}
+
+contract MarketPlaceBase {
+
+    struct Offer {
+        address seller;
+        uint256 price;
+    }
+
+    ERC721 public nftContract;
+
+    mapping (uint256 => Offer) canvasIdToOffer;
+
+    event OfferCreated(uint256 canvasId, uint256 price);
+    event OfferSuccessful(uint256 canvasId, uint256 price, address buyer);
+    event OfferCancelled(uint256 canvasId);
+
+    function _owns(address _claimant, uint256 _canvasId) internal view returns(bool) {
+        return (nftContract.ownerOf(_canvasId) == _claimant);
+    }
+
+    function _escrow(address _owner, uint256 _canvasId) internal {
+
+        nftContract.transferFrom(_owner, this, _canvasId);
+    }
+
+    function _transfer(address _receiver, uint256 _canvasId) internal {
+        nftContract.transfer(_receiver, _canvasId);
+    }
+
+    function _addOffer(uint256 _canvasId, Offer _offer) internal {
+        canvasIdToOffer[_canvasId] = _offer;
+
+        OfferCreated(_canvasId, _offer.price);
+    }
+
+    function _cancelOffer(uint256 _canvasId, address _seller) internal {
+        _removeOffer(_canvasId);
+        _transfer(_seller, _canvasId);
+        OfferCancelled(_canvasId);
+    }
+
+    function _buy(uint256 _canvasId) internal returns (uint256) {
+        Offer storage offer = canvasIdToOffer[_canvasId];
+
+        require(_isOnOffer(offer));
+
+        address seller = offer.seller;
+
+        _removeOffer(_canvasId);
+
+        if (offer.price > 0) {
+            seller.transfer(offer.price);
+        }
+
+        OfferSuccessful(_canvasId, offer.price, msg.sender);
+
+        return offer.price;
+    }
+
+    function _removeOffer(uint256 _canvasId) internal {
+        delete canvasIdToOffer[_canvasId];
+    }
+
+    function _isOnOffer(Offer storage _offer) internal view returns (bool) {
+        return (_offer.price > 0);
+    }
+}
+
+contract MarketPlace is MarketPlaceBase {
+
+    /// @dev The ERC-165 interface signature for ERC-721.
+    ///  Ref: https://github.com/ethereum/EIPs/issues/165
+    ///  Ref: https://github.com/ethereum/EIPs/issues/721
+    bytes4 constant INTERFACE_SIGNATURE_ERC721 = bytes4(0x9a20483d);
+
+    address owner = 0x00;
+
+    function MarketPlace(address _nftContract) public {
+        ERC721 candidateContract = ERC721(_nftContract);
+        require(candidateContract.supportsInterface(INTERFACE_SIGNATURE_ERC721));
+        nftContract = candidateContract;
+    }
+
+    function withdrawBalance() external {
+        address nftAddress = address(nftContract);
+
+        require(
+            msg.sender == owner ||
+            msg.sender == nftAddress
+        );
+        // We are using this boolean method to make sure that even if one fails it will still work
+        nftAddress.transfer(this.balance);
+    }
+
+    function createOffer(uint256 _canvasId, uint256 _price, address _seller) external {
+        require(_owns(msg.sender, _canvasId));
+        _escrow(msg.sender, _canvasId);
+
+        Offer memory offer = Offer({
+            seller: _seller, 
+            price: _price
+        });
+
+        _addOffer(_canvasId, offer);
+    }
+
+    function buy(uint256 _canvasId) external payable {
+        _buy(_canvasId);
+        _transfer(msg.sender, _canvasId);
+    }
+
+    function cancelOffer(uint256 _canvasId) external {
+        Offer storage offer = canvasIdToOffer[_canvasId];
+        require(_isOnOffer(offer));
+        address seller = offer.seller;
+        require(msg.sender == seller);
+        _cancelOffer(_canvasId, seller);
+    }
+
+    function getOffer(uint256 _canvasId) external view returns(address seller, uint256 price) {
+        Offer storage offer = canvasIdToOffer[_canvasId];
+        require(_isOnOffer(offer));
+        return (
+            offer.seller,
+            offer.price
+        );
+    }
+
 }
