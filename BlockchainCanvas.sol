@@ -256,13 +256,19 @@ contract MarketPlaceBase {
         Offer storage offer = canvasIdToOffer[_canvasId];
 
         require(_isOnOffer(offer));
-
+        require (msg.value >= offer.price);
         address seller = offer.seller;
 
         _removeOffer(_canvasId);
 
         if (offer.price > 0) {
             seller.transfer(offer.price);
+        }
+
+        uint256 change = msg.value - offer.price;
+
+        if (change > 0) {
+            msg.sender.transfer(change);
         }
 
         OfferSuccessful(_canvasId, offer.price, msg.sender);
@@ -288,7 +294,7 @@ contract MarketPlace is MarketPlaceBase {
 
     address owner = 0x00;
 
-    function MarketPlace(address _nftContract) public {
+    function MarketPlace(uint256 _nftContract) public {
         ERC721 candidateContract = ERC721(_nftContract);
         require(candidateContract.supportsInterface(INTERFACE_SIGNATURE_ERC721));
         nftContract = candidateContract;
