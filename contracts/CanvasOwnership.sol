@@ -124,8 +124,8 @@ contract CanvasModel {
 
         canvas[_canvasId].red = _red;
         canvas[_canvasId].green = _green;
-        canvas[_canvasId].green = _blue;
-        canvas[_canvasId].green = _alpha;
+        canvas[_canvasId].blue = _blue;
+        canvas[_canvasId].alpha = _alpha;
 
         CanvasFilled(_red, _green, _blue, _alpha, _canvasId);
     }
