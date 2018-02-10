@@ -2,15 +2,21 @@ pragma solidity ^0.4.17;
 
 import "./ERC721.sol";
 import "./MarketPlaceBase.sol";
+import "./Pausable.sol";
 
-contract MarketPlace is MarketPlaceBase {
+contract MarketPlace is MarketPlaceBase, Pausable {
 
     /// @dev The ERC-165 interface signature for ERC-721.
     ///  Ref: https://github.com/ethereum/EIPs/issues/165
     ///  Ref: https://github.com/ethereum/EIPs/issues/721
     bytes4 constant INTERFACE_SIGNATURE_ERC721 = bytes4(0x9a20483d);
 
+    bool public isMarketPlace = true;
+
     address owner = 0x00;
+
+    uint256 public releaseSaleCount;
+    uint256[5] public lastReleaseSalePrices;
 
     function MarketPlace(uint256 _nftContract, uint _cut) public {
         require(_cut <= 10000);
@@ -31,13 +37,10 @@ contract MarketPlace is MarketPlaceBase {
         nftAddress.transfer(this.balance);
     }
 
-    function createAuction(uint256 _canvasId, uint256 _startingPrice, uint256 _endingPrice, uint256 _duration, address _seller) external {
-        require(_startingPrice == uint256(uint128(_startingPrice)));
-        require(_endingPrice == uint256(uint128(_endingPrice)));
-        require(_duration == uint256(uint64(_duration)));
-
-        require(_owns(msg.sender, _canvasId));
+    function createAuction(uint256 _canvasId, uint256 _startingPrice, uint256 _endingPrice, uint256 _duration, address _seller) public whenNotPaused {
+        require(msg.sender == address(nftContract));
         _escrow(msg.sender, _canvasId);
+
         Auction memory auction = Auction(
             _seller,
             uint128(_startingPrice),
@@ -48,12 +51,12 @@ contract MarketPlace is MarketPlaceBase {
         _addAuction(_canvasId, auction);
     }
 
-    function bidOnAuction(uint256 _canvasId) external payable {
+    function bidOnAuction(uint256 _canvasId) public payable whenNotPaused {
         _bidOnAuction(_canvasId, msg.value);
         _transfer(msg.sender, _canvasId);
     }
 
-    function cancelAuction(uint256 _canvasId) external {
+    function cancelAuction(uint256 _canvasId) public {
         Auction storage auction = canvasIdToAuction[_canvasId];
         require(_isOnAuction(auction));
         address seller = auction.seller;
@@ -61,7 +64,8 @@ contract MarketPlace is MarketPlaceBase {
         _cancelAuction(_canvasId, seller);
     }
 
-    function createOffer(uint256 _canvasId, uint256 _price, address _seller) external {
+    function createOffer(uint256 _canvasId, uint256 _price, address _seller) public whenNotPaused {
+        require(_price == uint256(uint128(_price)));
         require(_owns(msg.sender, _canvasId));
         _escrow(msg.sender, _canvasId);
 
@@ -73,12 +77,12 @@ contract MarketPlace is MarketPlaceBase {
         _addOffer(_canvasId, offer);
     }
 
-    function buy(uint256 _canvasId) external payable {
+    function buy(uint256 _canvasId) public payable whenNotPaused {
         _buy(_canvasId);
         _transfer(msg.sender, _canvasId);
     }
 
-    function cancelOffer(uint256 _canvasId) external {
+    function cancelOffer(uint256 _canvasId) public {
         Offer storage offer = canvasIdToOffer[_canvasId];
         require(_isOnOffer(offer));
         address seller = offer.seller;
@@ -86,7 +90,7 @@ contract MarketPlace is MarketPlaceBase {
         _cancelOffer(_canvasId, seller);
     }
 
-    function getOffer(uint256 _canvasId) external view returns(address seller, uint256 price) {
+    function getOffer(uint256 _canvasId) public view returns(address seller, uint256 price) {
         Offer storage offer = canvasIdToOffer[_canvasId];
         require(_isOnOffer(offer));
         return (
@@ -95,8 +99,7 @@ contract MarketPlace is MarketPlaceBase {
         );
     }
 
-
-    function getAuction(uint256 _canvasId) external view returns (address seller, uint256 startingPrice, uint256 endingPrice, uint256 duration, uint256 startedAt) {
+    function getAuction(uint256 _canvasId) public view returns (address seller, uint256 startingPrice, uint256 endingPrice, uint256 duration, uint256 startedAt) {
         Auction storage auction = canvasIdToAuction[_canvasId];
         require(_isOnAuction(auction));
         return (
@@ -106,6 +109,14 @@ contract MarketPlace is MarketPlaceBase {
             auction.duration,
             auction.startedAt
         );
+    }
+
+    function averageReleaseSalePrice() public view returns (uint256) {
+        uint256 sum = 0;
+        for (uint256 i = 0; i < 5; i++) {
+            sum += lastReleaseSalePrices[i];
+        }
+        return sum / 5;
     }
 
 }

@@ -4,25 +4,30 @@ import "./ERC721.sol";
 
 contract MarketPlaceBase {
 
+    /*** EVENTS ***/
+    event OfferCreated(uint256 canvasId, uint256 price);
+    event OfferSuccessful(uint256 canvasId, uint256 price, address buyer);
+    event OfferCancelled(uint256 canvasId);
+
+    event AuctionCreated(uint256 canvasId, uint256 startingPrice, uint256 endingPrice, uint256 duration);
+    event AuctionSuccessful(uint256 canvasId, uint256 totalPrice, address winner);
+    event AuctionCancelled(uint256 canvasId);
+
+    /*** DATA TYPES ***/
     struct Offer {
         address seller;
         uint256 price;
     }
 
     struct Auction {
-        // Current owner of NFT
         address seller;
-        // Price (in wei) at beginning of auction
         uint128 startingPrice;
-        // Price (in wei) at end of auction
         uint128 endingPrice;
-        // Duration (in seconds) of auction
         uint64 duration;
-        // Time when auction started
-        // NOTE: 0 if this auction has been concluded
         uint64 startedAt;
     }
 
+    /*** STORAGE ***/
     ERC721 public nftContract;
     
     // Cut owner takes on each auction, measured in basis points (1/100 of a percent).
@@ -32,20 +37,13 @@ contract MarketPlaceBase {
     mapping (uint256 => Offer) canvasIdToOffer;
     mapping (uint256 => Auction) canvasIdToAuction;
 
-    event OfferCreated(uint256 canvasId, uint256 price);
-    event OfferSuccessful(uint256 canvasId, uint256 price, address buyer);
-    event OfferCancelled(uint256 canvasId);
-
-    event AuctionCreated(uint256 canvasId, uint256 startingPrice, uint256 endingPrice, uint256 duration);
-    event AuctionSuccessful(uint256 canvasId, uint256 totalPrice, address winner);
-    event AuctionCancelled(uint256 canvasId);
+    function() external {}
 
     function _owns(address _claimant, uint256 _canvasId) internal view returns(bool) {
         return (nftContract.ownerOf(_canvasId) == _claimant);
     }
 
     function _escrow(address _owner, uint256 _canvasId) internal {
-
         nftContract.transferFrom(_owner, this, _canvasId);
     }
 
