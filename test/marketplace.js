@@ -21,7 +21,7 @@ contract("MarketPlace", function(accounts) {
     describe("Offer testing:", function() {
         beforeEach(deploy);
         it("create offer", async function() {
-            await ownership.releaseStandardCanvas();
+            await ownership.releaseCycleCanvas();
 
             await marketPlace.createOffer(0, 100, user1);
 
@@ -32,7 +32,7 @@ contract("MarketPlace", function(accounts) {
         });
 
         it("cancel offer", async function() {
-            await ownership.releaseStandardCanvas();
+            await ownership.releaseCycleCanvas();
 
             await marketPlace.createOffer(0, 100, user1);
             await marketPlace.cancelOffer(0);
@@ -47,7 +47,7 @@ contract("MarketPlace", function(accounts) {
         });
 
         it("buy offer", async function() {
-            await ownership.releaseStandardCanvas();
+            await ownership.releaseCycleCanvas();
 
             await marketPlace.createOffer(0, 1200, user1);
 
@@ -63,7 +63,7 @@ contract("MarketPlace", function(accounts) {
     describe("Auction testing:", function() {
         beforeEach(deploy);
         it("create auction", async function() {
-            await ownership.releaseStandardCanvas();
+            await ownership.releaseCycleCanvas();
 
             await marketPlace.createAuction(0, 100, 10, 60, user1);
 
@@ -76,7 +76,7 @@ contract("MarketPlace", function(accounts) {
         });
 
         it("cancel auction", async function() {
-            await ownership.releaseStandardCanvas();
+            await ownership.releaseCycleCanvas();
 
             await marketPlace.createAuction(0, 100, 10, 60, user1);
             await marketPlace.cancelAuction(0);
@@ -91,7 +91,7 @@ contract("MarketPlace", function(accounts) {
         });
 
         it("bid on start auction", async function() {
-            await ownership.releaseStandardCanvas();
+            await ownership.releaseCycleCanvas();
 
             await marketPlace.createAuction(0, 1200, 1000, 600, user1);
 
@@ -106,7 +106,7 @@ contract("MarketPlace", function(accounts) {
         });
 
         it("bid on mid-time auction", async function() {
-            await ownership.releaseStandardCanvas();
+            await ownership.releaseCycleCanvas();
 
             await marketPlace.createAuction(0, 1000, 100, 60, user1);
     
@@ -121,7 +121,7 @@ contract("MarketPlace", function(accounts) {
         });
 
         it("bid on end auction", async function() {
-            await ownership.releaseStandardCanvas();
+            await ownership.releaseCycleCanvas();
 
             await marketPlace.createAuction(0, 1000, 100, 60, user1);
     

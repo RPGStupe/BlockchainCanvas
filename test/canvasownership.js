@@ -13,33 +13,47 @@ contract("CanvasOwnership", function(accounts) {
 
   describe("Canvas release:", function() {
     beforeEach(deploy);
-    it("release a standard canvas", async function() {
+    it("release cycle", async function() {
       
-      await canvasOwnership.releaseStandardCanvas();
+      await canvasOwnership.releaseCycleCanvas();
+      await canvasOwnership.releaseCycleCanvas();
+      await canvasOwnership.releaseCycleCanvas();
+      await canvasOwnership.releaseCycleCanvas();
+      await canvasOwnership.releaseCycleCanvas();
+      await canvasOwnership.releaseCycleCanvas();
+      await canvasOwnership.releaseCycleCanvas();
+      await canvasOwnership.releaseCycleCanvas();
+      await canvasOwnership.releaseCycleCanvas();
 
-      // const nCanvas = await canvasOwnership.totalSupply();
-      // const nCanvasStandard = await canvasOwnership.standardReleaseCount();
-
-      // assert.equal(1, nCanvas.toNumber());
-      // assert.equal(1, nCanvasStandard.toNumber());
-    });
-
-    it("release a promo canvas", async function() {
-      
-      await canvasOwnership.releasePromoCanvas();
+      const canvas0 = await canvasOwnership.getCanvas(0);
+      const canvas1 = await canvasOwnership.getCanvas(1);
+      const canvas2 = await canvasOwnership.getCanvas(2);
+      const canvas3 = await canvasOwnership.getCanvas(3);
+      const canvas4 = await canvasOwnership.getCanvas(4);
 
       const nCanvas = await canvasOwnership.totalSupply();
-      const nCanvasPromo = await canvasOwnership.promoReleaseCount();
+      const nCanvasStandard = await canvasOwnership.releaseCanvasCount();
 
-      assert.equal(1, nCanvas.toNumber());
-      assert.equal(1, nCanvasPromo.toNumber());
+      assert.equal(9, nCanvas.toNumber());
+      assert.equal(9, nCanvasStandard.toNumber());
+
+      assert.equal(0, canvas0[0].toNumber(), "Canvas 0 x");
+      assert.equal(0, canvas0[1].toNumber(), "Canvas 0 y");
+      assert.equal(1, canvas1[0].toNumber(), "Canvas 1 x");
+      assert.equal(0, canvas1[1].toNumber(), "Canvas 1 y");
+      assert.equal(2, canvas2[0].toNumber(), "Canvas 2 x");
+      assert.equal(0, canvas2[1].toNumber(), "Canvas 2 y");
+      assert.equal(3, canvas3[0].toNumber(), "Canvas 3 x");
+      assert.equal(0, canvas3[1].toNumber(), "Canvas 3 y");
+      assert.equal(4, canvas4[0].toNumber(), "Canvas 4 x");
+      assert.equal(0, canvas4[1].toNumber(), "Canvas 4 y");
     });
   });
-
+  
   describe("Canvas modification:", function() {
     beforeEach(deploy);
     it("get canvas data", async function() {
-      await canvasOwnership.releaseStandardCanvas();
+      await canvasOwnership.releaseCycleCanvas();
       const canvas = await canvasOwnership.getCanvas(0);
 
       const x = canvas[0];
@@ -74,7 +88,7 @@ contract("CanvasOwnership", function(accounts) {
     });
 
     it("fill canvas", async function() {
-      await canvasOwnership.releaseStandardCanvas();
+      await canvasOwnership.releaseCycleCanvas();
       await canvasOwnership.fillCanvas(0, 
         [1,2,3,4,5,6,7,8,9,10,1,2,3,4,5,6,7,8,9,10,1,2,3,4,5,6,7,8,9,10,1,2,3,4,5,6,7,8,9,10,1,2,3,4,5,6,7,8,9,10,1,2,3,4,5,6,7,8,9,10,255,255,255,255],
         [1,2,3,4,5,6,7,8,9,10,1,2,3,4,5,6,7,8,9,10,1,2,3,4,5,6,7,8,9,10,1,2,3,4,5,6,7,8,9,10,1,2,3,4,5,6,7,8,9,10,1,2,3,4,5,6,7,8,9,10,255,255,255,255],
@@ -106,12 +120,12 @@ contract("CanvasOwnership", function(accounts) {
   describe("ERC721 functions:", function() {
     beforeEach(deploy);
     it("check total supply", async function() {
-      await canvasOwnership.releaseStandardCanvas();
-      await canvasOwnership.releaseStandardCanvas();
-      await canvasOwnership.releaseStandardCanvas();
-      await canvasOwnership.releasePromoCanvas();
-      await canvasOwnership.releasePromoCanvas();
-      await canvasOwnership.releasePromoCanvas();
+      await canvasOwnership.releaseCycleCanvas();
+      await canvasOwnership.releaseCycleCanvas();
+      await canvasOwnership.releaseCycleCanvas();
+      await canvasOwnership.releaseCycleCanvas();
+      await canvasOwnership.releaseCycleCanvas();
+      await canvasOwnership.releaseCycleCanvas();
 
       const nCanvas = await canvasOwnership.totalSupply();
 
@@ -119,12 +133,12 @@ contract("CanvasOwnership", function(accounts) {
     });
 
     it("check total supply", async function() {
-      await canvasOwnership.releaseStandardCanvas();
-      await canvasOwnership.releaseStandardCanvas();
-      await canvasOwnership.releaseStandardCanvas();
-      await canvasOwnership.releasePromoCanvas();
-      await canvasOwnership.releasePromoCanvas();
-      await canvasOwnership.releasePromoCanvas();
+      await canvasOwnership.releaseCycleCanvas();
+      await canvasOwnership.releaseCycleCanvas();
+      await canvasOwnership.releaseCycleCanvas();
+      await canvasOwnership.releaseCycleCanvas();
+      await canvasOwnership.releaseCycleCanvas();
+      await canvasOwnership.releaseCycleCanvas();
 
       const nBalance = await canvasOwnership.balanceOf(user1);
 
@@ -132,7 +146,7 @@ contract("CanvasOwnership", function(accounts) {
     });
 
     it("check owner", async function() {
-      await canvasOwnership.releaseStandardCanvas();
+      await canvasOwnership.releaseCycleCanvas();
 
       const owner = await canvasOwnership.ownerOf(0);
 
@@ -141,7 +155,7 @@ contract("CanvasOwnership", function(accounts) {
 
     
     it("check transferFrom", async function() {
-      await canvasOwnership.releaseStandardCanvas();
+      await canvasOwnership.releaseCycleCanvas();
       await canvasOwnership.transferFrom(user1, user2, 0);
 
       const owner = await canvasOwnership.ownerOf(0);
@@ -151,7 +165,7 @@ contract("CanvasOwnership", function(accounts) {
 
     
     it("check transfer", async function() {
-      await canvasOwnership.releaseStandardCanvas();
+      await canvasOwnership.releaseCycleCanvas();
       await canvasOwnership.transfer(user2, 0);
 
       const owner = await canvasOwnership.ownerOf(0);
@@ -160,9 +174,9 @@ contract("CanvasOwnership", function(accounts) {
     });
 
     it("check tokens of owner", async function() {
-      await canvasOwnership.releaseStandardCanvas();
-      await canvasOwnership.releaseStandardCanvas();
-      await canvasOwnership.releasePromoCanvas();
+      await canvasOwnership.releaseCycleCanvas();
+      await canvasOwnership.releaseCycleCanvas();
+      await canvasOwnership.releaseCycleCanvas();
 
       await canvasOwnership.transfer(user2, 1);
 
