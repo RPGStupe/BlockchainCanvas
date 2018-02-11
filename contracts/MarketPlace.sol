@@ -13,8 +13,6 @@ contract MarketPlace is MarketPlaceBase, Pausable {
 
     bool public isMarketPlace = true;
 
-    address owner = 0x00;
-
     uint256 public releaseSaleCount;
     uint256[5] public lastReleaseSalePrices;
 
@@ -30,15 +28,25 @@ contract MarketPlace is MarketPlaceBase, Pausable {
     function withdrawBalance() external {
         address nftAddress = address(nftContract);
 
-        require(
-            msg.sender == owner ||
-            msg.sender == nftAddress
-        );
+        require(msg.sender == nftAddress);
+
         nftAddress.transfer(this.balance);
     }
 
-    function createAuction(uint256 _canvasId, uint256 _startingPrice, uint256 _endingPrice, uint256 _duration, address _seller) public whenNotPaused {
-        require(_owns(_seller, _canvasId));
+    function createAuction(
+        uint256 _canvasId, 
+        uint256 _startingPrice, 
+        uint256 _endingPrice, 
+        uint256 _duration, 
+        address _seller
+    ) 
+        public 
+        canBeStoredWith128Bits(_startingPrice) 
+        canBeStoredWith128Bits(_endingPrice) 
+        canBeStoredWith64Bits(_duration) 
+        whenNotPaused 
+    {
+        require(msg.sender == address(nftContract));
         _escrow(_seller, _canvasId);
 
         Auction memory auction = Auction(
@@ -64,16 +72,22 @@ contract MarketPlace is MarketPlaceBase, Pausable {
         _cancelAuction(_canvasId, seller);
     }
 
-    function createOffer(uint256 _canvasId, uint256 _price, address _seller) public whenNotPaused {
-        require(_price == uint256(uint128(_price)));
-        require(_owns(_seller, _canvasId));
+    function createOffer(
+        uint256 _canvasId, 
+        uint256 _price, 
+        address _seller
+    ) 
+        public 
+        whenNotPaused 
+        canBeStoredWith128Bits(_price) 
+    {
+        require(msg.sender == address(nftContract));
         _escrow(_seller, _canvasId);
 
         Offer memory offer = Offer({
             seller: _seller, 
             price: _price
         });
-
         _addOffer(_canvasId, offer);
     }
 

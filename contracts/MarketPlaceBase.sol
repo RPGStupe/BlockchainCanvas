@@ -27,6 +27,18 @@ contract MarketPlaceBase {
         uint64 startedAt;
     }
 
+    // Modifiers to check that inputs can be safely stored with a certain
+    // number of bits. We use constants and multiple modifiers to save gas.
+    modifier canBeStoredWith64Bits(uint256 _value) {
+        require(_value <= 18446744073709551615);
+        _;
+    }
+
+    modifier canBeStoredWith128Bits(uint256 _value) {
+        require(_value < 340282366920938463463374607431768211455);
+        _;
+    }
+
     /*** STORAGE ***/
     ERC721 public nftContract;
     
