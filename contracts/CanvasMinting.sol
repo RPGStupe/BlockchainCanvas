@@ -13,9 +13,9 @@ contract CanvasMinting is CanvasAuction {
     uint256 public constant MAX_RELEASE_CYCLE_COLUMNS = MAX_CANVAS_COLUMNS / COLUMNS_PER_CYCLE;
 
     uint256 public releaseCanvasCount;
-    uint256 public currentCycleCanvas;
-    uint256 public currentCycleRow;
-    uint256 public currentCycleColumn;
+    uint256 currentCycleCanvas;
+    uint256 currentCycleRow;
+    uint256 currentCycleColumn;
 
     uint256 public releaseStartingPrice = 10 finney;
     uint256 public releaseAuctionDuration = 1 days;
@@ -23,10 +23,12 @@ contract CanvasMinting is CanvasAuction {
     function releaseCycleCanvas() public onlyOwner {
         require(releaseCanvasCount < MAX_RELEASE_CANVAS);
 
-        uint8[64] memory _red;
-        uint8[64] memory _green;
-        uint8[64] memory _blue;
-        uint8[64] memory _alpha;
+        uint256 _red1;
+        uint256 _green1;
+        uint256 _blue1;
+        uint256 _red2;
+        uint256 _green2;
+        uint256 _blue2;
 
         uint256 x = (currentCycleCanvas % COLUMNS_PER_CYCLE) + (currentCycleColumn * COLUMNS_PER_CYCLE);
         uint256 y = (currentCycleCanvas / COLUMNS_PER_CYCLE) + (currentCycleRow * ROWS_PER_CYCLE);
@@ -43,7 +45,7 @@ contract CanvasMinting is CanvasAuction {
             }
         }
 
-        uint256 canvasId = _createCanvas(x, y, _red, _green, _blue, _alpha, address(this));
+        uint256 canvasId = _createCanvas(x, y, _red1, _green1, _blue1, _red2, _green2, _blue2, address(this));
         _approve(marketPlace, canvasId);
 
         marketPlace.createAuction(canvasId, _computeReleasePrice(), 0, releaseAuctionDuration, address(this));

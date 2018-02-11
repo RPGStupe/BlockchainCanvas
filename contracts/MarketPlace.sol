@@ -38,8 +38,8 @@ contract MarketPlace is MarketPlaceBase, Pausable {
     }
 
     function createAuction(uint256 _canvasId, uint256 _startingPrice, uint256 _endingPrice, uint256 _duration, address _seller) public whenNotPaused {
-        require(msg.sender == address(nftContract));
-        _escrow(msg.sender, _canvasId);
+        require(_owns(_seller, _canvasId));
+        _escrow(_seller, _canvasId);
 
         Auction memory auction = Auction(
             _seller,
@@ -66,8 +66,8 @@ contract MarketPlace is MarketPlaceBase, Pausable {
 
     function createOffer(uint256 _canvasId, uint256 _price, address _seller) public whenNotPaused {
         require(_price == uint256(uint128(_price)));
-        require(_owns(msg.sender, _canvasId));
-        _escrow(msg.sender, _canvasId);
+        require(_owns(_seller, _canvasId));
+        _escrow(_seller, _canvasId);
 
         Offer memory offer = Offer({
             seller: _seller, 

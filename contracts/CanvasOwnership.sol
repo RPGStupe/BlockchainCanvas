@@ -38,7 +38,7 @@ contract CanvasOwnership is ERC721, CanvasModel {
     
     function transferFrom(address _from, address _to, uint256 _canvasId) public whenNotPaused {
         require(_approvedFor(msg.sender, _canvasId));
-        require(_owns(ownerOf(_canvasId), _canvasId));
+        require(_owns(_from, _canvasId));
 
         _transfer(_from, _to, _canvasId);
     }

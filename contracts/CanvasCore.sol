@@ -23,22 +23,30 @@ contract CanvasCore is CanvasMinting {
         require(msg.sender == address(marketPlace));
     }
     
-    function fillCanvas(uint256 _canvasId, uint8[64] _red, uint8[64] _green, uint8[64] _blue, uint8[64] _alpha) public whenNotPaused {
+    function fillCanvas(uint256 _canvasId, uint256 _red1, uint256 _green1, uint256 _blue1, uint256 _red2, uint256 _green2, uint256 _blue2) public whenNotPaused {
         require(_owns(msg.sender, _canvasId));
 
-        canvas[_canvasId].red = _red;
-        canvas[_canvasId].green = _green;
-        canvas[_canvasId].blue = _blue;
-        canvas[_canvasId].alpha = _alpha;
+        canvas[_canvasId].red1 = _red1;
+        canvas[_canvasId].green1 = _green1;
+        canvas[_canvasId].blue1 = _blue1;
+        canvas[_canvasId].red2 = _red2;
+        canvas[_canvasId].green2 = _green2;
+        canvas[_canvasId].blue2 = _blue2;
 
-        CanvasFilled(_red, _green, _blue, _alpha, _canvasId);
+        CanvasFilled(_red1, _green1, _blue1, _red2, _green2, _blue2, _canvasId);
     }
 
-    function getCanvas(uint256 _canvasId) external view returns(uint256 _x, uint256 _y, uint8[64] _red, uint8[64] _green, uint8[64] _blue, uint8[64] _alpha) {
-        _red = canvas[_canvasId].red;
-        _green = canvas[_canvasId].green;
-        _blue = canvas[_canvasId].blue;
-        _alpha = canvas[_canvasId].alpha;
+    function returnNumber(uint256 _testNum) external pure returns(uint256 num) {
+        num = _testNum;
+    }
+
+    function getCanvas(uint256 _canvasId) external view returns(uint256 _x, uint256 _y, uint256 _red1, uint256 _green1, uint256 _blue1, uint256 _red2, uint256 _green2, uint256 _blue2) {
+        _red1 = canvas[_canvasId].red1;
+        _green1 = canvas[_canvasId].green1;
+        _blue1 = canvas[_canvasId].blue1;
+        _red2 = canvas[_canvasId].red2;
+        _green2 = canvas[_canvasId].green2;
+        _blue2 = canvas[_canvasId].blue2;
         _x = canvas[_canvasId].x;
         _y = canvas[_canvasId].y;
     }

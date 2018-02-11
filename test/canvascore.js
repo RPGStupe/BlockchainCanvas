@@ -45,6 +45,7 @@ contract("CanvasCore", function(accounts) {
     describe("Unpause", async function() {
         beforeEach(deploy);
         afterEach(unwatch);
+
         it("should unpause", async function() {
             const marketPlace = await MarketPlace.new(canvasCore.address, 0);
             await canvasCore.setMarketPlaceAddress(marketPlace.address);
@@ -143,6 +144,7 @@ contract("CanvasCore", function(accounts) {
     describe("GetCanvas", async function() {
         beforeEach(deploy);
         afterEach(unwatch);
+
         it("should return canvas data", async function() {
             const marketPlace = await MarketPlace.new(canvasCore.address, 0);
             await canvasCore.setMarketPlaceAddress(marketPlace.address);
@@ -153,39 +155,32 @@ contract("CanvasCore", function(accounts) {
 
             const x = canvas[0];
             const y = canvas[1];
-            const red = canvas[2];
-            const green = canvas[3];
-            const blue = canvas[4];
-            const alpha = canvas[5];
+            const red1 = canvas[2];
+            const green1 = canvas[3];
+            const blue1 = canvas[4];
+            const red2 = canvas[5];
+            const green2 = canvas[6];
+            const blue2 = canvas[7];
 
             assert.equal(0, x.toNumber());
             assert.equal(0, y.toNumber());
-
-            assert.equal(64, red.length);
-            red.forEach(pixel => {
-                assert.equal(0, pixel.toNumber());
-            });
-
-            assert.equal(64, green.length);
-            green.forEach(pixel => {
-                assert.equal(0, pixel.toNumber());
-            });
-
-            assert.equal(64, blue.length);
-            blue.forEach(pixel => {
-                assert.equal(0, pixel.toNumber());
-            });
-
-            assert.equal(64, alpha.length);
-            alpha.forEach(pixel => {
-                assert.equal(0, pixel.toNumber());
-            });
+            assert.equal(0, red1.toNumber());
+            assert.equal(0, green1.toNumber());
+            assert.equal(0, blue1.toNumber());
+            assert.equal(0, red2.toNumber());
+            assert.equal(0, green2.toNumber());
+            assert.equal(0, blue2.toNumber());
         });
     });
 
     describe("FillCanvas", async function() {
         beforeEach(deploy);
         afterEach(unwatch);
+
+        // Compute the biggest number possible in 256 bit (2**256 - 1)
+        // need bignumber because javascript does not work with numbers that large
+        const uint256Max = web3.toBigNumber(2).pow(256).minus(1);
+
         it("should fill canvas", async function() {
             const marketPlace = await MarketPlace.new(canvasCore.address, 0);
             await canvasCore.setMarketPlaceAddress(marketPlace.address);
@@ -195,33 +190,27 @@ contract("CanvasCore", function(accounts) {
             // Need to buy the canvas before being able to fill it
             await marketPlace.bidOnAuction(0, {from: user2, value: 10000000000000000});
 
-            await canvasCore.fillCanvas(0, 
-                [1,2,3,4,5,6,7,8,9,10,1,2,3,4,5,6,7,8,9,10,1,2,3,4,5,6,7,8,9,10,1,2,3,4,5,6,7,8,9,10,1,2,3,4,5,6,7,8,9,10,1,2,3,4,5,6,7,8,9,10,255,255,255,255],
-                [1,2,3,4,5,6,7,8,9,10,1,2,3,4,5,6,7,8,9,10,1,2,3,4,5,6,7,8,9,10,1,2,3,4,5,6,7,8,9,10,1,2,3,4,5,6,7,8,9,10,1,2,3,4,5,6,7,8,9,10,255,255,255,255],
-                [1,2,3,4,5,6,7,8,9,10,1,2,3,4,5,6,7,8,9,10,1,2,3,4,5,6,7,8,9,10,1,2,3,4,5,6,7,8,9,10,1,2,3,4,5,6,7,8,9,10,1,2,3,4,5,6,7,8,9,10,255,255,255,255],
-                [1,2,3,4,5,6,7,8,9,10,1,2,3,4,5,6,7,8,9,10,1,2,3,4,5,6,7,8,9,10,1,2,3,4,5,6,7,8,9,10,1,2,3,4,5,6,7,8,9,10,1,2,3,4,5,6,7,8,9,10,255,255,255,255],
+
+            await canvasCore.fillCanvas(0, uint256Max, 1, 2, 3, 4, 5,
                 {from: user2}
             );
         
             const canvas = await canvasCore.getCanvas(0);
             
-            const red = canvas[2];
-            const green = canvas[3];
-            const blue = canvas[4];
-            const alpha = canvas[5];
+            const red1 = canvas[2];
+            const green1 = canvas[3];
+            const blue1 = canvas[4];
+            const red2 = canvas[5];
+            const green2 = canvas[6];
+            const blue2 = canvas[7];
     
             // check some pixels in each the array
-            assert.equal(1, red[0].toNumber());
-            assert.equal(2, red[1].toNumber());
-            assert.equal(3, red[2].toNumber());
-            assert.equal(10, red[9].toNumber());
-            assert.equal(255, green[63].toNumber());
-            assert.equal(6, green[35].toNumber());
-            assert.equal(255, blue[60].toNumber());
-            assert.equal(10, blue[59].toNumber());
-            assert.equal(3, alpha[12].toNumber());
-            assert.equal(8, alpha[7].toNumber());
-            assert.equal(255, alpha[62].toNumber());
+            assert.equal(uint256Max, red1.toNumber());
+            assert.equal(1, green1.toNumber());
+            assert.equal(2, blue1.toNumber());
+            assert.equal(3, red2.toNumber());
+            assert.equal(4, green2.toNumber());
+            assert.equal(5, blue2.toNumber());
         });
 
         it("throw if not owner", async function() {
@@ -232,12 +221,7 @@ contract("CanvasCore", function(accounts) {
 
             let err;
             try {
-                await canvasCore.fillCanvas(0, 
-                    [1,2,3,4,5,6,7,8,9,10,1,2,3,4,5,6,7,8,9,10,1,2,3,4,5,6,7,8,9,10,1,2,3,4,5,6,7,8,9,10,1,2,3,4,5,6,7,8,9,10,1,2,3,4,5,6,7,8,9,10,255,255,255,255],
-                    [1,2,3,4,5,6,7,8,9,10,1,2,3,4,5,6,7,8,9,10,1,2,3,4,5,6,7,8,9,10,1,2,3,4,5,6,7,8,9,10,1,2,3,4,5,6,7,8,9,10,1,2,3,4,5,6,7,8,9,10,255,255,255,255],
-                    [1,2,3,4,5,6,7,8,9,10,1,2,3,4,5,6,7,8,9,10,1,2,3,4,5,6,7,8,9,10,1,2,3,4,5,6,7,8,9,10,1,2,3,4,5,6,7,8,9,10,1,2,3,4,5,6,7,8,9,10,255,255,255,255],
-                    [1,2,3,4,5,6,7,8,9,10,1,2,3,4,5,6,7,8,9,10,1,2,3,4,5,6,7,8,9,10,1,2,3,4,5,6,7,8,9,10,1,2,3,4,5,6,7,8,9,10,1,2,3,4,5,6,7,8,9,10,255,255,255,255]
-                );
+                await canvasCore.fillCanvas(0, 0, 1, 2, 3, 4, 5);
             } catch (error) {
                 err = error;
             }
